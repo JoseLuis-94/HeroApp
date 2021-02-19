@@ -1,34 +1,35 @@
 //
-//  ViewController.swift
+//  CollectionViewController.swift
 //  HeroApp
 //
-//  Created by Graciela Sarahi Guerra Castillo on 17/02/21.
+//  Created by Graciela Sarahi Guerra Castillo on 18/02/21.
 //
 
 import UIKit
 import Alamofire
 import SwiftyJSON
 
-class ViewController: UIViewController {
-
+class CollectionViewController: UIViewController {
+    
     var url = ""
     var urlb = "https://superheroapi.com/api/10156112965520834/"
     var arr = [String]()
     var img = [String]()
     var nam = [String]()
     var occ = [String]()
+    var id = [String]()
     var pos = 0
     
-    @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var searchbar: UISearchBar!
+    @IBOutlet weak var search: UISearchBar!
+    @IBOutlet weak var collectionView: UICollectionView!
     
-    // MARK: - Lifecycle Methods
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        tableView.delegate = self
-        tableView.dataSource = self
-        searchbar.delegate = self
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        search.delegate = self
         
         load()
     }
@@ -38,32 +39,34 @@ class ViewController: UIViewController {
     }
 }
 
-extension ViewController: UITableViewDelegate,UITableViewDataSource{
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return arr.count
+extension CollectionViewController: UICollectionViewDelegate, UICollectionViewDataSource{
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        arr.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "celltable") as! TableViewCell
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cellcollection", for: indexPath) as! CollectionViewCell
         cell.label.text = arr[indexPath.row]
         
-        cell.imgView?.image = .none
-        if cell.imgView?.load(url: NSURL(string: img[indexPath.row]) as! URL) != nil{
-            cell.imgView?.load(url: NSURL(string: img[indexPath.row]) as! URL)
+        //cell.imageView?.load(url: NSURL(string: img[indexPath.row]) as! URL)
+        cell.imageView?.image = .none
+        if cell.imageView?.load(url: NSURL(string: img[indexPath.row]) as! URL) != nil{
+            cell.imageView?.load(url: NSURL(string: img[indexPath.row]) as! URL)
         }else{
-            cell.imgView?.image = .none
+            cell.imageView?.image = .none
         }
         return cell
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let cell = tableView.cellForRow(at: indexPath) as! TableViewCell
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cellcollection", for: indexPath) as! CollectionViewCell
         pos = indexPath.row
-        performSegue(withIdentifier: "tablemodal", sender: self)
+        performSegue(withIdentifier: "collectionmodal", sender: self)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "tablemodal"{
+        if segue.identifier == "collectionmodal"{
             var detail = segue.destination as! DetailViewController
             detail.hn = arr[pos]
             detail.rn = nam[pos]
@@ -73,26 +76,26 @@ extension ViewController: UITableViewDelegate,UITableViewDataSource{
     }
 }
 
-extension ViewController: UISearchBarDelegate{
+extension CollectionViewController: UISearchBarDelegate{
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         arr.removeAll()
         img.removeAll()
         nam.removeAll()
         occ.removeAll()
-        search(character: searchbar.text!)
-        searchbar.text = ""
+        search(character: search.text!)
+        search.text = ""
         view.endEditing(true)
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        searchbar.text = ""
+        search.text = ""
         view.endEditing(true)
     }
 }
 
-extension ViewController{
-    func load(){
-        url = urlb + "search/a"
+extension CollectionViewController{
+    func load() {
+        url = urlb + "search/ant"
         
         AF.request(url).responseJSON{(response) -> Void in
             if response.value != nil {
@@ -107,7 +110,7 @@ extension ViewController{
                     }
                 }
             }
-            self.tableView.reloadData()
+            self.collectionView.reloadData()
         }
     }
     
@@ -132,21 +135,7 @@ extension ViewController{
                     }
                 }
             //}
-            self.tableView.reloadData()
-        }
-    }
-}
-
-extension UIImageView {
-    func load(url: URL) {
-        DispatchQueue.global().async { [weak self] in
-            if let data = try? Data(contentsOf: url) {
-                if let image = UIImage(data: data) {
-                    DispatchQueue.main.async {
-                        self?.image = image
-                    }
-                }
-            }
+            self.collectionView.reloadData()
         }
     }
 }
